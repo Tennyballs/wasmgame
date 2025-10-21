@@ -8,6 +8,7 @@
 #include <GLES3/gl3.h>
 #include <GL/glfw.h>
 #include <emscripten/html5.h>
+#include "vector2.h"
 #include <math.h>
 
 #define min(a, b) ((a < b) ? a : b)
@@ -17,7 +18,7 @@
 struct Main {
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE context;
     EmscriptenWebGLContextAttributes attrs;
-    int width, height;
+    Vector2i size;
 } Main;
 
 struct DeltaTime {
@@ -33,8 +34,7 @@ void gameLoop(){
     DeltaTime.lastTime = DeltaTime.currentTime;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glClearColor((float)(sin((double) time / 1000.0))*0.5f+0.5f, (float)(cos((double) time / 1000.0))*0.5f+0.5f, 1.0f, 1.0f);
-
+    // glClearColor((float)(sin((double) DeltaTime.currentTime / 1000.0))*0.5f+0.5f, (float)(cos((double) DeltaTime.currentTime / 1000.0))*0.5f+0.5f, 1.0f, 1.0f);
 }
 
 EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
@@ -42,7 +42,16 @@ EM_BOOL keyCallback(int eventType, const EmscriptenKeyboardEvent *keyEvent, void
     return false;
 }
 
-int main(int argc, char **argv)
+EM_BOOL mousemoved(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
+{
+    printf("(%i, %i)\n", mouseEvent->screenX, mouseEvent->screenY);
+
+    
+
+    return false;
+}
+
+int main()
 {
     if(!glfwInit())
     {
@@ -64,11 +73,12 @@ int main(int argc, char **argv)
     emscripten_webgl_make_context_current(Main.context);
     emscripten_set_canvas_element_size("#canvas", 640, 480);
 
-    Main.width = 640;
-    Main.height = 480;
+    Main.size.x = 640;
+    Main.size.y = 480;
 
     emscripten_set_keydown_callback("#canvas", NULL, true, keyCallback);
     emscripten_set_keyup_callback("#canvas", NULL, true, keyCallback);
+    emscripten_set_mousemove_callback("#canvas", NULL, true, mousemoved);
 
-    emscripten_set_main_loop(&gameLoop, 60, true);
+    emscripten_set_main_loop(&gameLoop, -1, true);
 }
